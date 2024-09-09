@@ -1,7 +1,7 @@
 $(document).ready(function() {
 // Check if the donation form exists on the page
   if ($("#wf-form-Donation-Form").length > 0) {
-    let jwtToken = '';
+    let jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJyYWlzaW4gdG9rZW4iLCJqdGkiOiJkYWU2OTdmYy1kNjM0LTQ0Y2YtYjhkNi1jNTM5MWNiNDkwOTciLCJVc2VySWQiOiIxNTcwNTE2IiwiSXNBZG1pbiI6IlRydWUiLCJJc0F1dGhlbnRpY2F0ZWQiOiJUcnVlIiwiSXNBbm9ueW1vdXMiOiJUcnVlIiwiRmlyc3RMb2dpbiI6IkZhbHNlIiwiT3JnYW5pemF0aW9uSWQiOiIxOTYiLCJTdWJFdmVudElkIjoiMjY1ODkiLCJFdmVudElkIjoiMjMyNDUiLCJFdmVudFR5cGVJZCI6IjExIiwiVGVtcGxhdGVJZCI6IjI1IiwiTGFuZ3VhZ2VJZCI6IjEiLCJUcmFja2luZ1Rva2VuIjoicmFpc2luLWFub255bW91cyIsIklwQWRkcmVzcyI6IjcwLjE4OS40OS44MiIsImV4cCI6MTcyNTkxNTA4NCwiaXNzIjoiUmFpc2luIiwiYXVkIjoiUmFpc2luIn0.u1xC2i3hVyZs4g-hVjuv7IaSojUrAcgWuQFiroOTzhw';
 
     // Function to get JWT token
     function getJWTToken() {
@@ -29,8 +29,8 @@ $(document).ready(function() {
 
     var respMsg = function (e) {
       if (e.origin.includes('moneris.com')) {
-        var respData = eval("(" + e.data + ")");
-        var responseCode = respData.responseCode;
+        var respData = JSON.parse(e.data);
+        var responseCode = Array.isArray(respData.responseCode) ? respData.responseCode[0] : respData.responseCode;
         var message = "";
         switch (responseCode) {
           case "001": // 001
