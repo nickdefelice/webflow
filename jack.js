@@ -1,16 +1,18 @@
 $(document).ready(function() {
 // Check if the donation form exists on the page
   if ($("#wf-form-Donation-Form").length > 0) {
-    let jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJyYWlzaW4gdG9rZW4iLCJqdGkiOiJkYWU2OTdmYy1kNjM0LTQ0Y2YtYjhkNi1jNTM5MWNiNDkwOTciLCJVc2VySWQiOiIxNTcwNTE2IiwiSXNBZG1pbiI6IlRydWUiLCJJc0F1dGhlbnRpY2F0ZWQiOiJUcnVlIiwiSXNBbm9ueW1vdXMiOiJUcnVlIiwiRmlyc3RMb2dpbiI6IkZhbHNlIiwiT3JnYW5pemF0aW9uSWQiOiIxOTYiLCJTdWJFdmVudElkIjoiMjY1ODkiLCJFdmVudElkIjoiMjMyNDUiLCJFdmVudFR5cGVJZCI6IjExIiwiVGVtcGxhdGVJZCI6IjI1IiwiTGFuZ3VhZ2VJZCI6IjEiLCJUcmFja2luZ1Rva2VuIjoicmFpc2luLWFub255bW91cyIsIklwQWRkcmVzcyI6IjcwLjE4OS40OS44MiIsImV4cCI6MTcyNTkxNTA4NCwiaXNzIjoiUmFpc2luIiwiYXVkIjoiUmFpc2luIn0.u1xC2i3hVyZs4g-hVjuv7IaSojUrAcgWuQFiroOTzhw';
+    let jwtToken = '';
 
     // Function to get JWT token
     function getJWTToken() {
       return $.ajax({
-        url: 'https://auth.uat.akaraisin.com/assets/jwt/token/anonymous/26589/196',
+        url: 'https://security.uat.akaraisin.com/api/authentication',
         method: 'POST',
-        headers: {
-          'Referrer': 'https://org196.uat.akaraisin.com'
-        }
+        contentType: 'application/json',
+        data: JSON.stringify({
+          organizationId: 196,
+          subEventCustomPart: "canadasgreatlakecrossing"
+        })
       }).then(function(response) {
         jwtToken = response.access_token;
       }).catch(function(error) {
