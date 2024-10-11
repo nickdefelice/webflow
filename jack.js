@@ -53,6 +53,8 @@ $(document).ready(function() {
               .then(function(donationResponse) {
                 console.log("10. Donation submitted successfully:", donationResponse);
                 // Handle successful donation
+                $('#wf-form-Donation-Form').submit();
+                return true;
               })
               .catch(function(error) {
                 console.error('11. Error in process:', error);
@@ -216,7 +218,6 @@ $(document).ready(function() {
         
         if (parsedResponse.Success === true) {
           console.log('10. Donation submitted successfully:', parsedResponse);
-          // Handle successful donation (e.g., show success message, redirect)
           return parsedResponse;
         } else {
           console.error('Donation failed:', parsedResponse);
