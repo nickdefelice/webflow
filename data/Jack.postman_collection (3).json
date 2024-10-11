@@ -1,0 +1,360 @@
+{
+	"info": {
+		"_postman_id": "d5e9cfc5-0df9-4768-bb4b-4c4f5f1d4696",
+		"name": "Jack",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6558498"
+	},
+	"item": [
+		{
+			"name": "Get RXF JWT Token Anonymous",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.environment.set(\"jwt_token\", responseBody);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Referrer",
+						"value": "https://org196.uat.akaraisin.com",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"organizationId\": 196,\r\n  \"subEventCustomPart\": \"canadasgreatlakecrossing\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://security.uat.akaraisin.com/api/authentication",
+					"protocol": "https",
+					"host": [
+						"security",
+						"uat",
+						"akaraisin",
+						"com"
+					],
+					"path": [
+						"api",
+						"authentication"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Get RXF JWT Token Anonymous",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"name": "Content-Type",
+								"type": "text"
+							},
+							{
+								"key": "Referer",
+								"value": "{{url_desktop}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "graphql"
+						},
+						"url": {
+							"raw": "https://{{url_auth}}/assets/jwt/token/anonymous/{{subEventCustomPart}}/{{organizationId}}",
+							"protocol": "https",
+							"host": [
+								"{{url_auth}}"
+							],
+							"path": [
+								"assets",
+								"jwt",
+								"token",
+								"anonymous",
+								"{{subEventCustomPart}}",
+								"{{organizationId}}"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "user20203-1",
+									"disabled": true
+								},
+								{
+									"key": "password",
+									"value": "Akaaka1!",
+									"disabled": true
+								},
+								{
+									"key": "reissue",
+									"value": "true",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Cache-Control",
+							"value": "private,public"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Server",
+							"value": "Microsoft-IIS/10.0"
+						},
+						{
+							"key": "X-AspNetMvc-Version",
+							"value": "5.2"
+						},
+						{
+							"key": "X-AspNet-Version",
+							"value": "4.0.30319"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "ASP.NET"
+						},
+						{
+							"key": "Content-Security-Policy",
+							"value": "default-src 'self'; script-src https: 'unsafe-inline' 'unsafe-eval'; img-src * data: blob: https:; font-src * https:; style-src * https: 'unsafe-inline'; connect-src sentry.io https:; frame-src https: youtube.com;"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "SAMEORIGIN"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1;mode=block"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000; includeSubDomains"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Access-Control-Allow-Headers",
+							"value": "Authorization,X-AspNet-Version,X-Powered-By,Date,Server,Accept,Accept-Encoding,Accept-Language,Cache-Control,Connection,Content-Length,Content-Type,Host,Origin,Pragma,Referer,User-Agent"
+						},
+						{
+							"key": "Access-Control-Allow-Methods",
+							"value": "GET, PUT, POST, DELETE, OPTIONS"
+						},
+						{
+							"key": "Access-Control-Max-Age",
+							"value": "1000"
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 08 Feb 2022 15:42:28 GMT"
+						},
+						{
+							"key": "Content-Length",
+							"value": "688"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJyYWlzaW4gdG9rZW4iLCJqdGkiOiIyYmJjZWIzYy1lMjg3LTQzZDAtYjk1OS1mZGRiNWQ4NDUwODIiLCJVc2VySWQiOiI2Njg5NzciLCJJc0FkbWluIjoiVHJ1ZSIsIklzQXV0aGVudGljYXRlZCI6IlRydWUiLCJJc0Fub255bW91cyI6IlRydWUiLCJGaXJzdExvZ2luIjoiRmFsc2UiLCJPcmdhbml6YXRpb25JZCI6IjIiLCJTdWJFdmVudElkIjoiMjM1NjAiLCJFdmVudElkIjoiMjAyNTAiLCJFdmVudFR5cGVJZCI6IjMiLCJUZW1wbGF0ZUlkIjoiMjQiLCJMYW5ndWFnZUlkIjoiMSIsIlRyYWNraW5nVG9rZW4iOiJyYWlzaW4tYW5vbnltb3VzIiwiZXhwIjoxNjQ0MzM4NTQ5LCJpc3MiOiJSYWlzaW4iLCJhdWQiOiJSYWlzaW4ifQ.8B6vSsQK6qQZ039cW1pRfrgdR3IcN9I1AfyeaThDjFg\",\n    \"culture\": \"en-CA\",\n    \"roles\": [],\n    \"userId\": 668977,\n    \"firstLogin\": false,\n    \"subEventId\": 23560,\n    \"organizationId\": 2\n}"
+				}
+			]
+		},
+		{
+			"name": "Donation call",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"randomDonationAmount\", Math.floor(_.random(10, 50)))"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"profile\": {\r\n    \"address\": {\r\n      \"line1\": \"20 Maud Street\",\r\n      \"line2\": \"\",\r\n      \"city\": \"Toronto\",\r\n      \"regionId\": 30,\r\n      \"postalCode\": \"A0A 0A0\",\r\n      \"countryId\": 1\r\n    },\r\n    \"userId\": 0,\r\n    \"contactType\": 0,\r\n    \"title\": \"\",\r\n    \"firstName\": \"Test\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"test234@test.com\",\r\n    \"organization\": \"test\",\r\n    \"phone\": \"\",\r\n    \"gender\": \"\",\r\n    \"interfaceLanguage\": 1,\r\n    \"correspondanceLanguage\": 1,\r\n    \"receiveCommunications\": false\r\n  },\r\n  \"paymentDetails\": {\r\n    \"paymentToken\": \"ot-uwm4B8sMj6AmqmmqeXTWxF322\",\r\n    \"cardNumber\": 424242,\r\n    \"cardHolderName\": \"qwerty\",\r\n    \"cardType\": 2,\r\n    \"paymentMethod\": 0,\r\n    \"payPalToken\": \"\",\r\n    \"payPalPayerId\": \"\",\r\n    \"payPalTotalAmount\": 0,\r\n    \"payPalCurrency\": \"\",\r\n    \"isVisaCheckOutAllowed\": false,\r\n    \"reCaptchaError\": \"\"\r\n  },\r\n  \"purchaseItems\": [\r\n    {\r\n      \"promoCode\": null,\r\n      \"itemId\": 0,\r\n      \"typeLabel\": \"Donation\",\r\n      \"category\": \"Donation\",\r\n      \"category2\": \"\",\r\n      \"category3\": \"\",\r\n      \"registrationFee\": 0,\r\n      \"minFundRaisingGoal\": 0,\r\n      \"suggestedFundRaisingGoal\": 0,\r\n      \"name\": \"\",\r\n      \"type\": 1,\r\n      \"quantity\": 1,\r\n      \"donationAmount\": 50,\r\n      \"otherFundName\": \"\",\r\n      \"tribute\": null,\r\n      \"eventTypeId\": 11,\r\n      \"$type\": \"GeneralDonationItem\",\r\n      \"isSelfDonation\": false\r\n    }\r\n  ],\r\n  \"surveys\": [\r\n    \r\n  ],\r\n  \"returningUserId\": null,\r\n  \"importSubEventId\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.uat.akaraisin.com/v2/constituent",
+					"protocol": "https",
+					"host": [
+						"api",
+						"uat",
+						"akaraisin",
+						"com"
+					],
+					"path": [
+						"v2",
+						"constituent"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Donation call",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"profile\": {\r\n    \"address\": {\r\n      \"line1\": \"20 Maud Street\",\r\n      \"line2\": \"\",\r\n      \"city\": \"Toronto\",\r\n      \"regionId\": 30,\r\n      \"postalCode\": \"A0A 0A0\",\r\n      \"countryId\": 1\r\n    },\r\n    \"userId\": 0,\r\n    \"contactType\": 0,\r\n    \"title\": \"\",\r\n    \"firstName\": \"Test\",\r\n    \"lastName\": \"Test\",\r\n    \"email\": \"test234@test.com\",\r\n    \"organization\": \"test\",\r\n    \"phone\": \"\",\r\n    \"gender\": \"\",\r\n    \"interfaceLanguage\": 1,\r\n    \"correspondanceLanguage\": 1,\r\n    \"receiveCommunications\": false\r\n  },\r\n  \"paymentDetails\": {\r\n    \"paymentToken\": \"ot-uwm4B8sMj6AmqmmqeXTWxF322\",\r\n    \"cardNumber\": 424242,\r\n    \"cardHolderName\": \"qwerty\",\r\n    \"cardType\": 2,\r\n    \"paymentMethod\": 0,\r\n    \"payPalToken\": \"\",\r\n    \"payPalPayerId\": \"\",\r\n    \"payPalTotalAmount\": 0,\r\n    \"payPalCurrency\": \"\",\r\n    \"isVisaCheckOutAllowed\": false,\r\n    \"reCaptchaError\": \"\"\r\n  },\r\n  \"purchaseItems\": [\r\n    {\r\n      \"promoCode\": null,\r\n      \"itemId\": 0,\r\n      \"typeLabel\": \"Donation\",\r\n      \"category\": \"Donation\",\r\n      \"category2\": \"\",\r\n      \"category3\": \"\",\r\n      \"registrationFee\": 0,\r\n      \"minFundRaisingGoal\": 0,\r\n      \"suggestedFundRaisingGoal\": 0,\r\n      \"name\": \"\",\r\n      \"type\": 1,\r\n      \"quantity\": 1,\r\n      \"donationAmount\": 50,\r\n      \"otherFundName\": \"\",\r\n      \"tribute\": null,\r\n      \"eventTypeId\": 11,\r\n      \"$type\": \"GeneralDonationItem\",\r\n      \"isSelfDonation\": false\r\n    }\r\n  ],\r\n  \"surveys\": [\r\n    \r\n  ],\r\n  \"returningUserId\": null,\r\n  \"importSubEventId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.uat.akaraisin.com/v2/constituent",
+							"protocol": "https",
+							"host": [
+								"api",
+								"uat",
+								"akaraisin",
+								"com"
+							],
+							"path": [
+								"v2",
+								"constituent"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "script",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 21 May 2024 19:39:40 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "text/javascript; charset=utf-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "710"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Content-Encoding",
+							"value": "gzip"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Content-Security-Policy",
+							"value": "default-src 'self'; script-src https: 'unsafe-inline' 'unsafe-eval'; img-src * data: blob: https:; font-src * https:; style-src * https: 'unsafe-inline'; connect-src sentry.io https:; frame-src https: youtube.com;"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "SAMEORIGIN"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1;mode=block"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=0; includeSubDomains"
+						},
+						{
+							"key": "Referrer-Policy",
+							"value": "strict-origin"
+						},
+						{
+							"key": "Permissions-Policy",
+							"value": "accelerometer=(), camera=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), geolocation=()"
+						},
+						{
+							"key": "CF-Cache-Status",
+							"value": "DYNAMIC"
+						},
+						{
+							"key": "Server",
+							"value": "cloudflare"
+						},
+						{
+							"key": "CF-RAY",
+							"value": "887708317bebaaa4-YYZ"
+						}
+					],
+					"cookie": [],
+					"body": "{\"Success\":true,\"Result\":{\"TxCode\":\"INTQ-20240414-17_4427014\",\"EventName\":\"Canada's Great Lakes Crossings\",\"Transaction\":{\"TxId\":10036742,\"TxPaymentId\":9032432,\"TxCode\":\"INTQ-20240414-17_4427014\",\"TransactionTypeId\":1,\"TransactionStatusId\":2,\"TransactionRepeatingTypeId\":1,\"TxPostingDate\":\"2024-05-21T15:39:23.3157782-04:00\",\"CurrencyId\":1,\"TxAmount\":50.0,\"TxAuthorizationCode\":\"T32272\",\"CreateDate\":\"2024-05-21T15:39:21.8826523-04:00\",\"CreatedBy\":1570516,\"SubEventId\":26589,\"UserId\":9673986},\"PurchaseItemGroupId\":15838005,\"Data\":{}},\"TrackerData\":{\"TransactionData\":{\"Id\":10036742,\"Affiliation\":\"\",\"Revenue\":50.0,\"Shipping\":0.0,\"Tax\":0.0},\"ItemData\":[{\"Id\":10036742,\"Name\":\"26589-Give Now\",\"Category\":\"Donation\",\"SKU\":\"257811\",\"Price\":50.0,\"Quantity\":1}]},\"Entity\":{\"Profile\":{\"UserId\":9673986,\"ContactType\":0,\"Title\":0,\"FirstName\":\"Test\",\"MiddleName\":\"\",\"LastName\":\"Test\",\"EmailType\":0,\"Email\":\"test234@test.com\",\"Organization\":\"test\",\"Phone\":\"\",\"Gender\":0,\"InterfaceLanguage\":1,\"CorrespondanceLanguage\":1,\"LastModified\":\"2024-05-21T15:39:21.767\",\"SubEventUserLastModified\":\"0001-01-01T00:00:00\",\"Address\":{\"AddressType\":0,\"Line1\":\"20 Maud Street\",\"Line2\":\"\",\"City\":\"Toronto\",\"RegionId\":30,\"PostalCode\":\"A0A 0A0\",\"CountryId\":1},\"ReceiveCommunications\":0,\"AllowDistributionOfDetails\":0,\"Privacy\":0},\"PurchaseItems\":[],\"Surveys\":[]}}"
+				}
+			]
+		}
+	]
+}
