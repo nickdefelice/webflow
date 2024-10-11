@@ -11,7 +11,7 @@ $(document).ready(function() {
         contentType: 'application/json',
         data: JSON.stringify({
           organizationId: 196,
-          subEventCustomPart: "canadasgreatlakecrossing"
+          subEventCustomPart: "testarnold"
         })
       }).then(function(response) {
         jwtToken = response.access_token;
