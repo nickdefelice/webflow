@@ -1,6 +1,6 @@
 $(document).ready(function() {
-// Check if the donation form exists on the page
-  if ($("#wf-form-Donation-Form").length > 0) {
+  // Check if any donation form exists on the page
+  if ($("[data-donate='complete-button']").length > 0) {
     let jwtToken = '';
     let isProcessing = false;
 
@@ -40,7 +40,7 @@ $(document).ready(function() {
         switch (responseCode) {
           case "001": // 001
             console.log("6. Successful Moneris token received");
-            $("#data-key").val(respData.dataKey);
+            window.currentDonationForm.find("#data-key").val(respData.dataKey);
             console.log("7. Data key set in form");
             // Get JWT token before formatting and submitting donation
             console.log("8. Initiating JWT token retrieval");
@@ -48,28 +48,34 @@ $(document).ready(function() {
               .then(function(response) {
                 jwtToken = response;
                 console.log("9. JWT Token successfully retrieved:", jwtToken);
-                return formatAndSubmitDonation();
+                return formatAndSubmitDonation(window.currentDonationForm);
               })
               .then(function(donationResponse) {
                 console.log("10. Donation submitted successfully:", donationResponse);
                 // Handle successful donation
-                $('#wf-form-Donation-Form').submit();
+                window.currentDonationForm.submit();
                 return true;
               })
               .catch(function(error) {
                 console.error('11. Error in process:', error);
-                $("#cc-error").text("We're experiencing technical difficulties. Please try again later.").show();
-                $("#donate-form-submit").prop('disabled', false);
-                $(".btn_main_text").text('Donate');
+                let errorMessage = "We're experiencing technical difficulties. Please try again later.";
+                
+                // Check if the error response contains the specific payment declined message
+                if (error && error.Exception && error.Exception.Message === "Payment declined.") {
+                  errorMessage = "Your payment was declined. Please check your card details and try again, or use a different payment method.";
+                }
+                
+                window.currentDonationForm.find("#cc-error").text(errorMessage).show();
+                window.currentDonationForm.find('[data-donate="complete-button"]').prop('disabled', false);
+                window.currentDonationForm.find('[data-donate="complete-button"] .btn_main_text').text('Donate');
                 isProcessing = false;
-                console.log("12. Error message displayed and donate button re-enabled");
               });
             return false;
           case "943":
             message = "Card data is invalid.";
             break;
           case "944":
-            message = "Invalid expiration date (MMYY, must be current month or in the future).";
+            message = "Invalid expiration date (MMYY, must be a future date).";
             break;
           case "945":
             message = "Invalid CVD data (not 3-4 digits).";
@@ -78,32 +84,35 @@ $(document).ready(function() {
             message = "Error saving credit card, please contact us hello@jack.org";
             console.log("6. Error in Moneris response:", message);
             // Re-enable the button and reset text
-            $("#donate-form-submit").prop('disabled', false);
-            $(".btn_main_text").text('Donate');
+            window.currentDonationForm.find('[data-donate="complete-button"]').prop('disabled', false);
+            window.currentDonationForm.find('[data-donate="complete-button"] .btn_main_text').text('Donate');
             isProcessing = false;
         }
-        $("#cc-error").text(message);
-        console.log("7. Error message displayed:", message);
+        window.currentDonationForm.find("#cc-error").text(message);
+        window.currentDonationForm.find('[data-donate="complete-button"]').prop('disabled', false);
+        window.currentDonationForm.find('[data-donate="complete-button"] .btn_main_text').text('Donate');
+        isProcessing = false;
         return false;
       }
     };
 
-    function formatAndSubmitDonation() {
+    function formatAndSubmitDonation($form) {
       console.log("formatAndSubmitDonation: Starting");
       console.log("Current JWT Token:", jwtToken);
+      
       const formFields = {
-        dataKey: $("#data-key").val(),
-        firstName: $("#Donate-First-Name").val(),
-        lastName: $("#Donate-Last-Name").val(),
-        email: $("#Donate-Email-Address").val(),
-        phone: $("#Donate-Phone").val(),
-        countryId: $("#Donate-Country").val(),
-        address: $("#Donate-Address").val(),
-        city: $("#Donate-City").val(),
-        regionId: $("#Region").val(),
-        postCode: $("#Donate-Post-Code").val(),
-        organization: $("#Donate-company-name").val(),
-        cardholderName: $("#Donate-Cardholder-Name").val()
+        dataKey: $form.find("#data-key").val(),
+        firstName: $form.find('[data-donate="first-name"]').val(),
+        lastName: $form.find('[data-donate="last-name"]').val(),
+        email: $form.find('[data-donate="email"]').val(),
+        phone: $form.find('[data-donate="phone"]').val(),
+        countryId: $form.find('[data-donate="country"]').val(),
+        address: $form.find('[data-donate="address"]').val(),
+        city: $form.find('[data-donate="city"]').val(),
+        regionId: $form.find('[data-donate="region"]').val(),
+        postCode: $form.find('[data-donate="post-code"]').val(),
+        organization: $form.find('[data-donate="company-name"]').val(),
+        cardholderName: $form.find('[data-donate="cardholder-name"]').val()
       };
 
       // Trim all values
@@ -114,18 +123,16 @@ $(document).ready(function() {
       });
 
       let donationAmount;
-      const selectedAmount = $("input[name='Amount']:checked").val().trim();
+      
+      const selectedAmount = $form.find('[data-donate="amount"] input:checked').val().trim();
       if (selectedAmount === 'Other') {
-        donationAmount = $("#Other-Amount").val().trim().replace('$', '');
+        donationAmount = $form.find('[data-donate="other-amount"]').val().trim().replace('$', '');
       } else {
         donationAmount = selectedAmount.replace('$', '');
       }
       
-      const frequency = $("input[name='Frequency']:checked").val().toLowerCase().trim();
-      const isDonatingOnBehalfOfCompany = $("#Donating-on-behalf-of-a-company").is(":checked");
-
-      // const countryId = getCountryId(formFields.country);
-      // const regionId = getRegionId(formFields.state, countryId);
+      const frequency = $form.find('[data-donate="frequency"] input:checked').val().toLowerCase().trim();
+      const isDonatingOnBehalfOfCompany = $form.find('[data-donate="dedicate-this-donation"]').is(":checked");
 
       const jsonData = {
         profile: {
@@ -190,6 +197,7 @@ $(document).ready(function() {
         importSubEventId: null
       };
 
+      console.log("JSON data to be submitted:", jsonData);
       return $.ajax({
         url: 'https://api.uat.akaraisin.com/v2/constituent',
         method: 'POST',
@@ -230,7 +238,7 @@ $(document).ready(function() {
     }
 
     // Event listener for the donate button
-    $("#donate-form-submit").on("click", function (e) {
+    $(document).on("click", '[data-donate="complete-button"]', function (e) {
       e.preventDefault();
       
       if (isProcessing) {
@@ -240,11 +248,17 @@ $(document).ready(function() {
       
       console.log("1. Donate button clicked");
       
+      // Get the form that contains the clicked button
+      const $form = $(this).closest('form');
+      
       // Disable the button and change its text
       isProcessing = true;
       $(this).prop('disabled', true);
-      $(".btn_main_text").text('Processing...');
+      $form.find('[data-donate="complete-button"] .btn_main_text').text('Processing...');
       console.log("2. Button disabled and text changed to 'Processing...'");
+      
+      // Store the form for later use
+      window.currentDonationForm = $form;
       
       doCCSubmit();
       console.log("3. doCCSubmit() called");
