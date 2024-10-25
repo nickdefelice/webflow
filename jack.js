@@ -214,7 +214,8 @@ $(document).ready(function() {
           gender: "",
           interfaceLanguage: 1, // 1 for en-ca, 2 for fr-ca
           correspondanceLanguage: 1, // 1 for en-ca, 2 for fr-ca
-          receiveCommunications: !optOutOfCommunications 
+          receiveCommunications: !optOutOfCommunications,
+          allowDistributionOfDetails: isAnonymousDonation,
         },
         paymentDetails: {
           paymentToken: formFields.dataKey,
