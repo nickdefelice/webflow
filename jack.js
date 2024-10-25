@@ -1,19 +1,55 @@
 $(document).ready(function() {
   // Check if any donation form exists on the page
   if ($("[data-donate='complete-button']").length > 0) {
+
+    const AUTHENTICATION_URL = 'https://security.dm.akaraisin.com/api/authentication';
+    const MONERIS_TOKEN_URL = 'https://www3.moneris.com/HPPtoken/index.php';
+    const CONSTITUENT_API_URL = 'https://api.akaraisin.com/v2/constituent';
+    const FALLBACK_DONATION_URL = 'https://jack.akaraisin.com/ui/donatenow';
+
     let jwtToken = '';
     let isProcessing = false;
+
+    let organizationId = 196;
+    let subEventCustomPart = "YE25W"; // Default value
+
+    // Function to get URL parameters
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      var results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Set subEventCustomPart based on utm_source
+    const utmSource = getUrlParameter('utm_source');
+    const utmSourceMapping = {
+      '34705': 'YE25BRE',
+      '34694': 'YE25W',
+      '34700': 'YE25A',
+      '34703': 'YE25DM',
+      '34695': 'YE25M1',
+      '34696': 'YE25M2',
+      '34697': 'YE25M3',
+      '34698': 'YE25M4'
+    };
+
+    if (utmSource && utmSourceMapping[utmSource]) {
+      subEventCustomPart = utmSourceMapping[utmSource];
+    }
+
+    console.log("subEventCustomPart set to:", subEventCustomPart);
 
     // Function to get JWT token
     function getJWTToken() {
       console.log("getJWTToken: Initiating API call");
       return $.ajax({
-        url: 'https://security.uat.akaraisin.com/api/authentication',
+        url: AUTHENTICATION_URL,
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
-          organizationId: 196,
-          subEventCustomPart: "testarnold"
+          organizationId: organizationId,
+          subEventCustomPart: subEventCustomPart
         })
       }).then(function(response) {
         console.log("getJWTToken: API call successful", response);
@@ -26,7 +62,7 @@ $(document).ready(function() {
 
     function doCCSubmit() {
       var ccFrameRef = document.getElementById("monerisFrame").contentWindow;
-      ccFrameRef.postMessage("tokenize", "https://esqa.moneris.com/HPPtoken/index.php");
+      ccFrameRef.postMessage("tokenize", MONERIS_TOKEN_URL);
       return false;
     }
 
@@ -58,7 +94,7 @@ $(document).ready(function() {
               })
               .catch(function(error) {
                 console.error('11. Error in process:', error);
-                let errorMessage = "We're experiencing technical difficulties. Please try again later.";
+                let errorMessage = "We're experiencing technical difficulties. Please try to donate at " + FALLBACK_DONATION_URL;
                 
                 // Check if the error response contains the specific payment declined message
                 if (error && error.Exception && error.Exception.Message === "Payment declined.") {
@@ -132,7 +168,30 @@ $(document).ready(function() {
       }
       
       const frequency = $form.find('[data-donate="frequency"] input:checked').val().toLowerCase().trim();
-      const isDonatingOnBehalfOfCompany = $form.find('[data-donate="dedicate-this-donation"]').is(":checked");
+      const isDedicatedDonation = $form.find('[data-donate="dedicate-this-donation"] input[type=checkbox]').is(":checked");
+      const isDonatingOnBehalfOfCompany = $form.find('[data-donate="donate-company"] input[type=checkbox]').is(":checked");
+      const isAdminFee = $form.find('[data-donate="admin-cost"] input[type=checkbox]').is(":checked");
+      const optOutOfCommunications = $form.find('[data-donate="opt-out"] input[type=checkbox]').is(":checked");
+      const isAnonymousDonation = $form.find('[data-donate="donate-anonymously"] input[type=checkbox]').is(":checked");
+      const donationType = (() => {
+        if (isDedicatedDonation) {
+          switch (frequency) {
+            case 'one-time': return 2; // In Honour Donation
+            case 'monthly': return 7; // In Honour Monthly
+            case 'quarterly': return 9; // In Honour Quarterly
+            case 'annual': return 10; // In Honour Annual
+            default: return 2; // Default to In Honour Donation
+          }
+        } else {
+          switch (frequency) {
+            case 'one-time': return 1; // General Donation
+            case 'monthly': return 4; // General Donation Monthly
+            case 'quarterly': return 5; // General Donation Quarterly
+            case 'annual': return 6; // General Donation Annual
+            default: return 1; // Default to General Donation
+          }
+        }
+      })();
 
       const jsonData = {
         profile: {
@@ -155,14 +214,14 @@ $(document).ready(function() {
           gender: "",
           interfaceLanguage: 1, // 1 for en-ca, 2 for fr-ca
           correspondanceLanguage: 1, // 1 for en-ca, 2 for fr-ca
-          receiveCommunications: false
+          receiveCommunications: !optOutOfCommunications 
         },
         paymentDetails: {
           paymentToken: formFields.dataKey,
           cardNumber: 0, // This should be masked or not included for security
           cardHolderName: formFields.cardholderName,
           cardType: 2, // You may need to determine this based on the card number
-          paymentMethod: 0,
+          paymentMethod: 0, 
           payPalToken: "",
           payPalPayerId: "",
           payPalTotalAmount: 0,
@@ -182,11 +241,12 @@ $(document).ready(function() {
             minFundRaisingGoal: 0,
             suggestedFundRaisingGoal: 0,
             name: "",
-            type: frequency === "one-time" ? 1 : frequency === "monthly" ? 4 : frequency === "quarterly" ? 5 : frequency === "annual" ? 6 : 1, // 1: one time, 4: monthly, 5: quarterly, 6: annual
+            type: donationType,
             quantity: 1,
             donationAmount: parseFloat(donationAmount),
+            fundId: 10444,
             otherFundName: "",
-            tribute: null,
+            tribute: null, // TODO: Add tribute !isDedicatedDonation
             eventTypeId: 11,
             $type: "GeneralDonationItem",
             isSelfDonation: false
@@ -197,9 +257,48 @@ $(document).ready(function() {
         importSubEventId: null
       };
 
+      // Add admin fee item if applicable
+      let adminFeeAmount = 0;
+      if (isAdminFee) {
+        adminFeeAmount = parseFloat(donationAmount) * 0.02;
+        adminFeeAmount = Math.min(adminFeeAmount, 5.00);
+        adminFeeAmount = Math.round(adminFeeAmount * 100) / 100;
+      }
+      if (isAdminFee && adminFeeAmount > 0) {
+        jsonData.purchaseItems.push({
+          promoCode: null,
+          itemId: 0,
+          typeLabel: "AdminFee",
+          category: "Admin Fee",
+          category2: "",
+          category3: "",
+          registrationFee: 0,
+          minFundRaisingGoal: 0,
+          suggestedFundRaisingGoal: 0,
+          name: "",
+          adminFeeAmount: adminFeeAmount,
+          type: 29,
+          $type: "AdminFeeItem"
+        });
+      }
+
+      // Handle dedicated donation
+      if (isDedicatedDonation) {
+          const honoreeName = $form.find('[data-donate="honore-name"]').val();
+          const [firstName, ...lastNameParts] = honoreeName.split(' ');
+          const lastName = lastNameParts.join(' ');
+
+          if (firstName && firstName.trim()) {
+              jsonData.purchaseItems[0].tribute = {
+                  firstName: firstName,
+                  lastName: lastName
+              };
+          }
+      }
+
       console.log("JSON data to be submitted:", jsonData);
       return $.ajax({
-        url: 'https://api.uat.akaraisin.com/v2/constituent',
+        url: CONSTITUENT_API_URL,
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + jwtToken,
@@ -254,6 +353,7 @@ $(document).ready(function() {
       // Disable the button and change its text
       isProcessing = true;
       $(this).prop('disabled', true);
+      // Add class on body that form is submitting
       $form.find('[data-donate="complete-button"] .btn_main_text').text('Processing...');
       console.log("2. Button disabled and text changed to 'Processing...'");
       
@@ -273,4 +373,3 @@ $(document).ready(function() {
   }
   
 });
-
