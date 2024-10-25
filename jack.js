@@ -38,6 +38,12 @@ $(document).ready(function() {
       subEventCustomPart = utmSourceMapping[utmSource];
     }
 
+    // Check if utm_id=fr is in the URL
+    const utmId = getUrlParameter('utm_id');
+    if (utmId === 'fr') {
+      subEventCustomPart += 'FR';
+    }
+
     console.log("subEventCustomPart set to:", subEventCustomPart);
 
     // Function to get JWT token
