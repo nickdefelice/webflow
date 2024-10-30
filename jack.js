@@ -147,37 +147,7 @@ $(document).ready(function() {
     function formatAndSubmitDonation($form, moneris_dataKey, moneris_bin) {
       console.log("formatAndSubmitDonation: Starting");
       console.log("Current JWT Token:", jwtToken);
-      
-      const formFields = {
-        firstName: $form.find('[data-donate="first-name"]').val(),
-        lastName: $form.find('[data-donate="last-name"]').val(),
-        email: $form.find('[data-donate="email"]').val(),
-        phone: $form.find('[data-donate="phone"]').val(),
-        countryId: $form.find('[data-donate="country"]').val(),
-        address: $form.find('[data-donate="address"]').val(),
-        city: $form.find('[data-donate="city"]').val(),
-        regionId: $form.find('[data-donate="region"]').val(),
-        postCode: $form.find('[data-donate="post-code"]').val(),
-        organization: $form.find('[data-donate="company-name"]').val(),
-        cardholderName: $form.find('[data-donate="cardholder-name"]').val()
-      };
 
-      // Trim all values
-      Object.keys(formFields).forEach(key => {
-        if (typeof formFields[key] === 'string') {
-          formFields[key] = formFields[key].trim();
-        }
-      });
-
-      let donationAmount;
-      
-      const selectedAmount = $form.find('[data-donate="amount"] input:checked').val().trim();
-      if (selectedAmount === 'Other') {
-        donationAmount = $form.find('[data-donate="other-amount"]').val().trim().replace('$', '');
-      } else {
-        donationAmount = selectedAmount.replace('$', '');
-      }
-      
       const frequency = $form.find('[data-donate="frequency"] input:checked').val().toLowerCase().trim();
       const inHonour = $form.find('[data-donate="dedicate-this-donation"] input[type=checkbox]').is(":checked");
       const inMemory = $form.find('[data-donate="dedicate-in-memory"] input[type=checkbox]').is(":checked");
@@ -205,12 +175,45 @@ $(document).ready(function() {
           }
         }
       })();
+      
+      const formFields = {
+        firstName: $form.find('[data-donate="first-name"]').val(),
+        lastName: $form.find('[data-donate="last-name"]').val(),
+        email: $form.find('[data-donate="email"]').val(),
+        phone: $form.find('[data-donate="phone"]').val(),
+        countryId: $form.find('[data-donate="country"]').val(),
+        address: $form.find('[data-donate="address"]').val(),
+        address2: $form.find('[data-donate="address-2"]').val(),
+        city: $form.find('[data-donate="city"]').val(),
+        regionId: $form.find('[data-donate="region"]').val(),
+        postCode: $form.find('[data-donate="post-code"]').val(),
+        organization: $form.find('[data-donate="company-name"]').val(),
+        cardholderName: $form.find('[data-donate="cardholder-name"]').val(),
+        tributeeFirstName: $form.find('[data-donate="tributee-first-name"]').val(),
+        tributeeLastName: $form.find('[data-donate="tributee-last-name"]').val()
+      };
+
+      // Trim all values
+      Object.keys(formFields).forEach(key => {
+        if (typeof formFields[key] === 'string') {
+          formFields[key] = formFields[key].trim();
+        }
+      });
+
+      let donationAmount;
+      
+      const selectedAmount = $form.find('[data-donate="amount"] input:checked').val().trim();
+      if (selectedAmount === 'Other') {
+        donationAmount = $form.find('[data-donate="other-amount"]').val().trim().replace('$', '');
+      } else {
+        donationAmount = selectedAmount.replace('$', '');
+      }
 
       const jsonData = {
         profile: {
           address: {
             line1: formFields.address,
-            line2: "",
+            line2: formFields.address2,
             city: formFields.city,
             regionId: parseInt(formFields.regionId, 10),
             postalCode: formFields.postCode,
@@ -298,15 +301,32 @@ $(document).ready(function() {
 
       // Handle dedicated donation
       if (isDedicatedDonation) {
-          const honoreeName = $form.find('[data-donate="honore-name"]').val();
-          const [firstName, ...lastNameParts] = honoreeName.split(' ');
-          const lastName = lastNameParts.join(' ');
-
-          if (firstName && firstName.trim()) {
-              jsonData.purchaseItems[0].tribute = {
-                  firstName: firstName,
-                  lastName: lastName
+          if (formFields.tributeeFirstName && formFields.tributeeFirstName.trim()) {
+              const tributeObject = {
+                  firstName: formFields.tributeeFirstName,
+                  lastName: formFields.tributeeLastName || ""
               };
+
+              // Check if ecard is selected by checking if value is 'e-card'
+              if ($form.find('[data-donate="ecard-selection"] input:checked').val() === 'e-card') {
+                  // Get the selected ecard design value
+                  const selectedTemplateId = parseInt($form.find('[data-donate="ecard-design"] input:checked').val(), 10);
+                  
+                  tributeObject.eCard = {
+                      templateId: selectedTemplateId,
+                      message: $form.find('[data-donate="message"]').val().trim(), 
+                      deliveryDate: $form.find('[data-donate="date"]').val().trim(),
+                      recipients: [
+                          {
+                              firstName: $form.find('[data-donate="recipient-first-name"]').val().trim(),
+                              lastName: $form.find('[data-donate="recipient-last-name"]').val().trim() || "",
+                              email: $form.find('[data-donate="recipient-email"]').val().trim()
+                          }
+                      ]
+                  };
+              }
+
+              jsonData.purchaseItems[0].tribute = tributeObject;
           }
       }
 
