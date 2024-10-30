@@ -52,3 +52,4 @@ Authentication
 I'd like to cover the admin fee for this donation so more can go to the cause
 Tim: Similarly, the optional admin is a separate purchase item, so in your request include another purchase item where type = 29. This can be sent with any Donation, In Honour or In Memory item type.
 
+

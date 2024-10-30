@@ -8,7 +8,10 @@ $(document).ready(function() {
     const FALLBACK_DONATION_URL = 'https://jack.akaraisin.com/ui/donatenow';
 
     let jwtToken = '';
+    let moneris_dataKey = '';
+    let moneris_bin = '';
     let isProcessing = false;
+    let isFrench = false;
 
     let organizationId = 196;
     let subEventCustomPart = "YE25W"; // Default value
@@ -41,6 +44,7 @@ $(document).ready(function() {
     // Check if utm_id=fr is in the URL
     const utmId = getUrlParameter('utm_id');
     if (utmId === 'fr') {
+      isFrench = true;
       subEventCustomPart += 'FR';
     }
 
@@ -83,6 +87,8 @@ $(document).ready(function() {
           case "001": // 001
             console.log("6. Successful Moneris token received");
             window.currentDonationForm.find("#data-key").val(respData.dataKey);
+            moneris_dataKey = respData.dataKey;
+            moneris_bin = respData.bin;
             console.log("7. Data key set in form");
             // Get JWT token before formatting and submitting donation
             console.log("8. Initiating JWT token retrieval");
@@ -90,7 +96,7 @@ $(document).ready(function() {
               .then(function(response) {
                 jwtToken = response;
                 console.log("9. JWT Token successfully retrieved:", jwtToken);
-                return formatAndSubmitDonation(window.currentDonationForm);
+                return formatAndSubmitDonation(window.currentDonationForm, moneris_dataKey, moneris_bin);
               })
               .then(function(donationResponse) {
                 console.log("10. Donation submitted successfully:", donationResponse);
@@ -110,7 +116,7 @@ $(document).ready(function() {
                 window.currentDonationForm.find("#cc-error").text(errorMessage).show();
                 window.currentDonationForm.find('[data-donate="complete-button"]').prop('disabled', false);
                 window.currentDonationForm.find('[data-donate="complete-button"] .btn_main_text').text('Donate');
-                isProcessing = false;
+                toggleProcessing(false);
               });
             return false;
           case "943":
@@ -128,22 +134,21 @@ $(document).ready(function() {
             // Re-enable the button and reset text
             window.currentDonationForm.find('[data-donate="complete-button"]').prop('disabled', false);
             window.currentDonationForm.find('[data-donate="complete-button"] .btn_main_text').text('Donate');
-            isProcessing = false;
+            toggleProcessing(false);
         }
         window.currentDonationForm.find("#cc-error").text(message);
         window.currentDonationForm.find('[data-donate="complete-button"]').prop('disabled', false);
         window.currentDonationForm.find('[data-donate="complete-button"] .btn_main_text').text('Donate');
-        isProcessing = false;
+        toggleProcessing(false);
         return false;
       }
     };
 
-    function formatAndSubmitDonation($form) {
+    function formatAndSubmitDonation($form, moneris_dataKey, moneris_bin) {
       console.log("formatAndSubmitDonation: Starting");
       console.log("Current JWT Token:", jwtToken);
       
       const formFields = {
-        dataKey: $form.find("#data-key").val(),
         firstName: $form.find('[data-donate="first-name"]').val(),
         lastName: $form.find('[data-donate="last-name"]').val(),
         email: $form.find('[data-donate="email"]').val(),
@@ -174,7 +179,9 @@ $(document).ready(function() {
       }
       
       const frequency = $form.find('[data-donate="frequency"] input:checked').val().toLowerCase().trim();
-      const isDedicatedDonation = $form.find('[data-donate="dedicate-this-donation"] input[type=checkbox]').is(":checked");
+      const inHonour = $form.find('[data-donate="dedicate-this-donation"] input[type=checkbox]').is(":checked");
+      const inMemory = $form.find('[data-donate="dedicate-in-memory"] input[type=checkbox]').is(":checked");
+      const isDedicatedDonation = inHonour || inMemory;
       const isDonatingOnBehalfOfCompany = $form.find('[data-donate="donate-company"] input[type=checkbox]').is(":checked");
       const isAdminFee = $form.find('[data-donate="admin-cost"] input[type=checkbox]').is(":checked");
       const optOutOfCommunications = $form.find('[data-donate="opt-out"] input[type=checkbox]').is(":checked");
@@ -182,19 +189,19 @@ $(document).ready(function() {
       const donationType = (() => {
         if (isDedicatedDonation) {
           switch (frequency) {
-            case 'one-time': return 2; // In Honour Donation
-            case 'monthly': return 7; // In Honour Monthly
-            case 'quarterly': return 9; // In Honour Quarterly
-            case 'annual': return 10; // In Honour Annual
-            default: return 2; // Default to In Honour Donation
+            case 'one-time': return inMemory ? 3 : 2;   // In Memory or In Honour Donation
+            case 'monthly': return inMemory ? 12 : 7;   // In Memory or In Honour Monthly
+            case 'quarterly': return inMemory ? 21 : 9; // In Memory or In Honour Quarterly
+            case 'annual': return inMemory ? 22 : 10;   // In Memory or In Honour Annual
+            default: return inMemory ? 3 : 2;           // Default to One-time
           }
         } else {
           switch (frequency) {
-            case 'one-time': return 1; // General Donation
-            case 'monthly': return 4; // General Donation Monthly
-            case 'quarterly': return 5; // General Donation Quarterly
-            case 'annual': return 6; // General Donation Annual
-            default: return 1; // Default to General Donation
+            case 'one-time': return 1;   // General Donation
+            case 'monthly': return 4;     // General Monthly
+            case 'quarterly': return 5;   // General Quarterly
+            case 'annual': return 6;      // General Annual
+            default: return 1;            // Default to General Donation
           }
         }
       })();
@@ -218,16 +225,16 @@ $(document).ready(function() {
           organization: isDonatingOnBehalfOfCompany ? formFields.organization : "", // Fill with organization name if donating as company representative
           phone: formFields.phone,
           gender: "",
-          interfaceLanguage: 1, // 1 for en-ca, 2 for fr-ca
-          correspondanceLanguage: 1, // 1 for en-ca, 2 for fr-ca
+          interfaceLanguage: isFrench ? 2 : 1, 
+          correspondanceLanguage: isFrench ? 2 : 1, 
           receiveCommunications: !optOutOfCommunications,
           allowDistributionOfDetails: isAnonymousDonation,
         },
         paymentDetails: {
-          paymentToken: formFields.dataKey,
-          cardNumber: 0, // This should be masked or not included for security
+          paymentToken: moneris_dataKey,
+          cardNumber: moneris_bin,
           cardHolderName: formFields.cardholderName,
-          cardType: 2, // You may need to determine this based on the card number
+          cardType:0, // Determine card type based on BIN
           paymentMethod: 0, 
           payPalToken: "",
           payPalPayerId: "",
@@ -253,7 +260,7 @@ $(document).ready(function() {
             donationAmount: parseFloat(donationAmount),
             fundId: 10444,
             otherFundName: "",
-            tribute: null, // TODO: Add tribute !isDedicatedDonation
+            tribute: null, 
             eventTypeId: 11,
             $type: "GeneralDonationItem",
             isSelfDonation: false
@@ -343,6 +350,16 @@ $(document).ready(function() {
       });
     }
 
+    // Add this new function
+    function toggleProcessing(state) {
+      isProcessing = state;
+      if (state) {
+        $("body").addClass("form-submitting");
+      } else {
+        $("body").removeClass("form-submitting");
+      }
+    }
+
     // Event listener for the donate button
     $(document).on("click", '[data-donate="complete-button"]', function (e) {
       e.preventDefault();
@@ -358,9 +375,8 @@ $(document).ready(function() {
       const $form = $(this).closest('form');
       
       // Disable the button and change its text
-      isProcessing = true;
       $(this).prop('disabled', true);
-      // Add class on body that form is submitting
+      toggleProcessing(true);
       $form.find('[data-donate="complete-button"] .btn_main_text').text('Processing...');
       console.log("2. Button disabled and text changed to 'Processing...'");
       
