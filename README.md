@@ -53,6 +53,17 @@ I'd like to cover the admin fee for this donation so more can go to the cause
 Tim: Similarly, the optional admin is a separate purchase item, so in your request include another purchase item where type = 29. This can be sent with any Donation, In Honour or In Memory item type.
 
 ToDo: 
-- Add in memory and in honour donation types to the donation type dropdown
-- Add reciept # to the thank you page
+- Add GA event for success and error page
 
+
+color: #333;
+    vertical-align: middle;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    width: 100%;
+    height: 38px;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.42857;
+    display: block;
