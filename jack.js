@@ -43,12 +43,25 @@ $(document).ready(function() {
 
     // Check if utm_id=fr is in the URL
     const utmId = getUrlParameter('utm_id');
-    if (utmId === 'fr') {
+    if (utmId === 'fr' || $('html').attr('lang') === 'fr') {
       isFrench = true;
       subEventCustomPart += 'FR';
     }
 
     console.log("subEventCustomPart set to:", subEventCustomPart);
+    // Handle "In Honour" checkbox
+    $('[data-donate="dedicate-this-donation"] input[type=checkbox]').on('change', function() {
+        if ($(this).is(":checked")) {
+            updateEcardDesigns('honour');
+        }
+    });
+
+    // Handle "In Memory" checkbox
+    $('[data-donate="dedicate-in-memory"] input[type=checkbox]').on('change', function() {
+        if ($(this).is(":checked")) {
+            updateEcardDesigns('memory');
+        }
+    });
 
     // Function to get JWT token
     function getJWTToken() {
@@ -362,6 +375,16 @@ $(document).ready(function() {
           // Extract and display the transaction number
           const txCode = parsedResponse.Result.Transaction.TxCode;
           $('[data-donate="transaction-number"]').text(txCode);
+          
+          // Show appropriate success message based on frequency
+          if (frequency === 'one-time') {
+            $('[data-donate="success-otg"]').show();
+            $('[data-donate="success-monthly"]').hide();
+          } else if (frequency === 'monthly') {
+            $('[data-donate="success-monthly"]').show();
+            $('[data-donate="success-otg"]').hide();
+          }
+          
           $("body").removeClass("form-submitting");
           return parsedResponse;
         } else {
@@ -382,6 +405,43 @@ $(document).ready(function() {
       } else {
         $("body").removeClass("form-submitting");
       }
+    }
+
+    // Add this function near the top with other function declarations
+    function updateEcardDesigns(tributeType) {
+        const cardMappings = {
+            'honour': {
+                'english': ['3320', '2331', '2332'],
+                'french': ['3326']
+            },
+            'memory': {
+                'english': ['3324', '2333'],
+                'french': ['3328']
+            }
+        };
+
+        // Determine which cards to show based on tribute type and language
+        let relevantCardIds = [];
+        if (tributeType === 'honour') {
+            relevantCardIds = isFrench ? cardMappings.honour.french : cardMappings.honour.english;
+        } else if (tributeType === 'memory') {
+            relevantCardIds = isFrench ? cardMappings.memory.french : cardMappings.memory.english;
+        }
+
+        // Hide all cards first
+        $('[data-donate="ecard-design"]').hide();
+        
+        // Show only relevant cards
+        relevantCardIds.forEach(id => {
+            $(`[data-donate="ecard-design"] input[value="${id}"]`).closest('[data-donate="ecard-design"]').show();
+        });
+
+        // If no card is selected and there are available cards, select the first one
+        const visibleCards = $('[data-donate="ecard-design"]:visible');
+        const selectedCard = $('[data-donate="ecard-design"] input:checked:visible');
+        if (visibleCards.length > 0 && selectedCard.length === 0) {
+            visibleCards.first().find('input[type="radio"]').prop('checked', true);
+        }
     }
 
     // Event listener for the donate button
