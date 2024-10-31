@@ -359,6 +359,10 @@ $(document).ready(function() {
         
         if (parsedResponse.Success === true) {
           console.log('10. Donation submitted successfully:', parsedResponse);
+          // Extract and display the transaction number
+          const txCode = parsedResponse.Result.Transaction.TxCode;
+          $('[data-donate="transaction-number"]').text(txCode);
+          $("body").removeClass("form-submitting");
           return parsedResponse;
         } else {
           console.error('Donation failed:', parsedResponse);
