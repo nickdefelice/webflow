@@ -48,7 +48,6 @@ $(document).ready(function() {
       subEventCustomPart += 'FR';
     }
 
-    console.log("subEventCustomPart set to:", subEventCustomPart);
     // Handle "In Honour" checkbox
     $('[data-donate="dedicate-this-donation"] input[type=checkbox]').on('change', function() {
         if ($(this).is(":checked")) {
@@ -65,7 +64,6 @@ $(document).ready(function() {
 
     // Function to get JWT token
     function getJWTToken() {
-      console.log("getJWTToken: Initiating API call");
       return $.ajax({
         url: AUTHENTICATION_URL,
         method: 'POST',
@@ -75,10 +73,8 @@ $(document).ready(function() {
           subEventCustomPart: subEventCustomPart
         })
       }).then(function(response) {
-        console.log("getJWTToken: API call successful", response);
-        return response; // Return the entire response
+        return response;
       }).catch(function(error) {
-        console.error("getJWTToken: API call failed", error);
         throw error;
       });
     }
@@ -91,37 +87,26 @@ $(document).ready(function() {
 
     var respMsg = function (e) {
       if (e.origin.includes('moneris.com')) {
-        console.log("4. Received message from Moneris");
         var respData = JSON.parse(e.data);
         var responseCode = Array.isArray(respData.responseCode) ? respData.responseCode[0] : respData.responseCode;
-        console.log("5. Moneris response code:", responseCode);
         var message = "";
         switch (responseCode) {
           case "001": // 001
-            console.log("6. Successful Moneris token received");
             window.currentDonationForm.find("#data-key").val(respData.dataKey);
             moneris_dataKey = respData.dataKey;
             moneris_bin = respData.bin;
-            console.log("7. Data key set in form");
-            // Get JWT token before formatting and submitting donation
-            console.log("8. Initiating JWT token retrieval");
             getJWTToken()
               .then(function(response) {
                 jwtToken = response;
-                console.log("9. JWT Token successfully retrieved:", jwtToken);
                 return formatAndSubmitDonation(window.currentDonationForm, moneris_dataKey, moneris_bin);
               })
               .then(function(donationResponse) {
-                console.log("10. Donation submitted successfully:", donationResponse);
-                // Handle successful donation
                 window.currentDonationForm.submit();
                 return true;
               })
               .catch(function(error) {
-                console.error('11. Error in process:', error);
                 let errorMessage = "We're experiencing technical difficulties. Please try to donate at " + FALLBACK_DONATION_URL;
                 
-                // Check if the error response contains the specific payment declined message
                 if (error && error.Exception && error.Exception.Message === "Payment declined.") {
                   errorMessage = "Your payment was declined. Please check your card details and try again, or use a different payment method.";
                 }
@@ -143,8 +128,6 @@ $(document).ready(function() {
             break;
           default:
             message = "Error saving credit card, please contact us hello@jack.org";
-            console.log("6. Error in Moneris response:", message);
-            // Re-enable the button and reset text
             window.currentDonationForm.find('[data-donate="complete-button"]').prop('disabled', false);
             window.currentDonationForm.find('[data-donate="complete-button"] .btn_main_text').text('Donate');
             toggleProcessing(false);
@@ -158,9 +141,6 @@ $(document).ready(function() {
     };
 
     function formatAndSubmitDonation($form, moneris_dataKey, moneris_bin) {
-      console.log("formatAndSubmitDonation: Starting");
-      console.log("Current JWT Token:", jwtToken);
-
       const frequency = $form.find('[data-donate="frequency"] input:checked').val().toLowerCase().trim();
       const inHonour = $form.find('[data-donate="dedicate-this-donation"] input[type=checkbox]').is(":checked");
       const inMemory = $form.find('[data-donate="dedicate-in-memory"] input[type=checkbox]').is(":checked");
@@ -343,7 +323,7 @@ $(document).ready(function() {
           }
       }
 
-      console.log("JSON data to be submitted:", jsonData);
+      //console.log("JSON data to be submitted:", jsonData);
       return $.ajax({
         url: CONSTITUENT_API_URL,
         method: 'POST',
@@ -353,30 +333,19 @@ $(document).ready(function() {
         },
         data: JSON.stringify(jsonData)
       }).then(function(response) {
-        console.log("formatAndSubmitDonation: API call response", response);
-        
-        // Parse the response if it's a string
         let parsedResponse = response;
         if (typeof response === 'string') {
           try {
             parsedResponse = JSON.parse(response);
           } catch (e) {
-            console.error("Error parsing response:", e);
             throw new Error("Invalid response format");
           }
         }
         
-        console.log("Parsed response:", parsedResponse);
-        console.log("Success value:", parsedResponse.Success);
-        console.log("Type of Success value:", typeof parsedResponse.Success);
-        
         if (parsedResponse.Success === true) {
-          console.log('10. Donation submitted successfully:', parsedResponse);
-          // Extract and display the transaction number
           const txCode = parsedResponse.Result.Transaction.TxCode;
           $('[data-donate="transaction-number"]').text(txCode);
           
-          // Show appropriate success message based on frequency
           if (frequency === 'one-time') {
             $('[data-donate="success-otg"]').show();
             $('[data-donate="success-monthly"]').hide();
@@ -388,16 +357,13 @@ $(document).ready(function() {
           $("body").removeClass("form-submitting");
           return parsedResponse;
         } else {
-          console.error('Donation failed:', parsedResponse);
           throw new Error('Donation failed: ' + JSON.stringify(parsedResponse));
         }
       }).catch(function(error) {
-        console.error('Error submitting donation:', error);
         throw error;
       });
     }
 
-    // Add this new function
     function toggleProcessing(state) {
       isProcessing = state;
       if (state) {
@@ -407,7 +373,6 @@ $(document).ready(function() {
       }
     }
 
-    // Add this function near the top with other function declarations
     function updateEcardDesigns(tributeType) {
         const cardMappings = {
             'honour': {
@@ -420,7 +385,6 @@ $(document).ready(function() {
             }
         };
 
-        // Determine which cards to show based on tribute type and language
         let relevantCardIds = [];
         if (tributeType === 'honour') {
             relevantCardIds = isFrench ? cardMappings.honour.french : cardMappings.honour.english;
@@ -428,15 +392,12 @@ $(document).ready(function() {
             relevantCardIds = isFrench ? cardMappings.memory.french : cardMappings.memory.english;
         }
 
-        // Hide all cards first
         $('[data-donate="ecard-design"]').hide();
         
-        // Show only relevant cards
         relevantCardIds.forEach(id => {
             $(`[data-donate="ecard-design"] input[value="${id}"]`).closest('[data-donate="ecard-design"]').show();
         });
 
-        // If no card is selected and there are available cards, select the first one
         const visibleCards = $('[data-donate="ecard-design"]:visible');
         const selectedCard = $('[data-donate="ecard-design"] input:checked:visible');
         if (visibleCards.length > 0 && selectedCard.length === 0) {
@@ -444,34 +405,24 @@ $(document).ready(function() {
         }
     }
 
-    // Event listener for the donate button
     $(document).on("click", '[data-donate="complete-button"]', function (e) {
       e.preventDefault();
       
       if (isProcessing) {
-        console.log("Donation already in progress. Ignoring click.");
         return;
       }
       
-      console.log("1. Donate button clicked");
-      
-      // Get the form that contains the clicked button
       const $form = $(this).closest('form');
       
-      // Disable the button and change its text
       $(this).prop('disabled', true);
       toggleProcessing(true);
       $form.find('[data-donate="complete-button"] .btn_main_text').text('Processing...');
-      console.log("2. Button disabled and text changed to 'Processing...'");
       
-      // Store the form for later use
       window.currentDonationForm = $form;
       
       doCCSubmit();
-      console.log("3. doCCSubmit() called");
     });
 
-    // Add the event listener for the Moneris response
     if (window.addEventListener) {
       window.addEventListener("message", respMsg, false);
     } else if (window.attachEvent) {
