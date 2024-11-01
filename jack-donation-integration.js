@@ -357,6 +357,28 @@ $(document).ready(function() {
           $("body").removeClass("form-submitting");
           return parsedResponse;
         } else {
+          // Log error to Sentry with transaction details
+          if (typeof Sentry !== 'undefined') {
+            Sentry.withScope(function(scope) {
+              // Add payment specific error details
+              scope.setExtra('errorCode', parsedResponse.exception?.code);
+              scope.setExtra('errorMessage', parsedResponse.exception?.message);
+              scope.setExtra('paymentStatus', parsedResponse.result?.paymentStatus);
+              scope.setExtra('paymentReason', parsedResponse.result?.reason);
+              scope.setExtra('transactionCode', parsedResponse.result?.transactionCode);
+              scope.setExtra('createdUserId', parsedResponse.result?.createdUserId);
+              scope.setExtra('fullResponse', JSON.stringify(parsedResponse));
+              
+              // Set error level based on payment decline
+              scope.setLevel(parsedResponse.exception?.code === 4020 ? 'warning' : 'error');
+              
+              Sentry.captureMessage(
+                parsedResponse.exception?.code === 4020 
+                  ? 'Payment declined by payment processor'
+                  : 'Donation API returned failure response'
+              );
+            });
+          }
           throw new Error('Donation failed: ' + JSON.stringify(parsedResponse));
         }
       }).catch(function(error) {
